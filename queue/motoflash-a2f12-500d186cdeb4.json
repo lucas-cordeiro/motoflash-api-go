@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "motoflash-a2f12",
+  "private_key_id": "500d186cdeb473f88e40874b69e05225d182de63",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCapZ+wBEm9/7/j\nSS4FYsk40oezX1J1+j2sEnU4EuhQ8pOfPy/7kTQAcfyvuEaEkSYRinki3rg1g3gX\nNsj/mY8SFNu0qbg72F4S8MpGJ0Qaq3NVUARmDq6n6eUcUW0ef8n5+aYIJVgToxMq\nwSrxkGZe/5ZtmP5+c9SW8MuOhe65bKh5Dc0uOM4T5HKyC/AwmUAUxn6JR0GdnTug\nF9F60OlMSRofe64n3mDL+xcy5GWorqm1e11LhrYp5nphErKUNQFGs1hSIdbScG0L\nCncZOAB/nHmtb8k6c2PEDcVip1GKCr+9JQrMB0uGPIQEgTThH1NFQoaZly+Ct7Em\nFWfaoEF3AgMBAAECggEAAuyTmTYIWIaRdknxjAbsjx2yYZRLChGlQOLiD7r4l/wL\nCb1qhtmdn7SIEDqHx566ML+Ev6gLPtfLJlIFRiMwYimKzfiEYOO1qhE4TrZ6jzAj\niiVtL92iZ88zlqMWt4QeQyyS4YYmccvPlpHFSIDWe4CRs5jRykpRmfKlQEvZnuy4\nUQfNt7PF+MkOAetZjWlgetDKUCmbh9JM4EdT1xfilZZHUe0lEgUn/kPIDGuPfwTa\nHqfn6xyFeLy/tpAghmGtNL6MtuYhsq6hA46ZgNPzDSVNnF4l7obOhAr31JiWtoG4\namo/owsNUF+9E5kLFDAkgYgwC1dqoCBjZXytAxnTAQKBgQDP8An1qsJY81eSB/QE\nOrucjCagNcIhbeyayFTbYglTV3PU2RUHmZpXeUQq1fsAv1p7yx2HCk1HGXG/Vw12\nEoXMrO9Vn3+1PB47nF4ebEemzzsLpbkqBkgqetlFSQdtgDJ2rXAwDws7RlH8p1bn\n0EI+XBCkpvckcwZodHKLEjq0lwKBgQC+ZEz7zy2PH8KCLYgVHr4tfh2RxpAYyNh6\noQQNZTCuHKZP+Z7iOYTmvIhV7W/GN5gI1PWEUdNX1P8h0Atf2fp80YLslUnriq9N\nPdVxv89SWzHCTVdIdsjW29JbgCtauPB4y7oMtnrADEzk4Jxxqo7ujaiMxEvYlW7H\nkBJl1gYWIQKBgFhIsOHWAzfi8U42BDt7eEZKFug0itzIoAlDfwu5/v2chrhbBpu4\ncpgrC28odK5nkBI5NastC4xhWDMF0dhMmvRAhEkVNBKNmMR0al1+WZmQKKCUVx5p\nlmA60l6hV/78y/ApSRWOfZVIEO01WyeG+2kgi4xsu0eFcrYMosk7DyO3AoGBAIQA\nipdzlwTKYlNbOiRagkSMUfgGEVX9uombJXIcHFo7JtwAF7aFZq2LPYNF8d8eIFzP\nOcIZ8UvOM23ADoLQYKk1oW5iOzQBnXUST/BjqlxROfibIs7s/GZrVjd2b5ig7Kjz\npvS1d/m7DX0Kda0hMaQXtyqR1nw9bucR7o+IigPBAoGAZFBhU5Y1AhjfGkwTzA9S\n5QoFTSZqAPi09SQWltkH5yNgqrTqyXZpJ/XYYjOzpqWjL1Ce2ld3i09GDiLasxDK\nVoO9fY6jnP8mBdsL1qrWvJue1A7NbFXNDGDpfAlDP+3nTBKFWtgLsrVDUAIPUtDh\nQovpq6ypogf/DvMbS43BMtA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "dev-api@motoflash-a2f12.iam.gserviceaccount.com",
+  "client_id": "117193852551314391200",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dev-api%40motoflash-a2f12.iam.gserviceaccount.com"
+}
