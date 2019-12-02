@@ -15,7 +15,8 @@ import (
 	"firebase.google.com/go/auth"
 	"firebase.google.com/go/messaging"
 	"google.golang.org/api/iterator"
-	// "google.golang.org/api/option"
+	//"google.golang.org/api/option"
+	"google.golang.org/genproto/googleapis/type/latlng"
 )
 
 var clientAuth *auth.Client
@@ -30,12 +31,12 @@ var currentWorkOrder = WorkOrder{}
 func init() {
 	// Use the application default credentials
 	ctx := context.Background()
-	// conf := &firebase.Config{DatabaseURL: "https://motoflash-a2f12.firebaseio.com/"}
+	//conf := &firebase.Config{DatabaseURL: "https://motoflash-a2f12.firebaseio.com/"}
 	// Fetch the service account key JSON file contents
-	// opt := option.WithCredentialsFile("/Users/lucasgabriel/BitBucker/motoflash-api-go/queue/motoflash-a2f12-500d186cdeb4.json")
+	//opt := option.WithCredentialsFile("./motoflash-a2f12-500d186cdeb4.json")
 
 	// Initialize the app with a service account, granting admin privileges
-	// app, err := firebase.NewApp(ctx, conf, opt)
+	//app, err := firebase.NewApp(ctx, conf, opt)
 	conf := &firebase.Config{ProjectID: "motoflash-a2f12"}
 	app, err := firebase.NewApp(ctx, conf)
 	if err != nil {
@@ -89,7 +90,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			showError(w, ErrorResponse{
 				Message: "Unauthorized, invalid acessToken",
 				Code:    401,
-				Fied:    "accesstoken",
+				Field:   "accesstoken",
 				Type:    "UNAUTHORIZED",
 			})
 		}
@@ -99,7 +100,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			showError(w, ErrorResponse{
 				Message: "Unauthorized, invalid acessToken",
 				Code:    401,
-				Fied:    "accesstoken",
+				Field:   "accesstoken",
 				Type:    "UNAUTHORIZED",
 			})
 			return
@@ -109,13 +110,13 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 	path := strings.Split(r.URL.String(), "/")
 	workOrderID := path[len(path)-1]
 
-	ref := clientFirestore.Collection("workOrders").Doc(workOrderID)
+	ref := clientFirestore.Collection("workorders").Doc(workOrderID)
 	c := make(chan ResultRunQueue)
 
-	var company Company = Company{}
 	var couriers = []Courier{}
 
 	go func(c chan ResultRunQueue) {
+		var company Company = Company{}
 		iter := ref.Snapshots(context.Background())
 		for {
 			doc, err := iter.Next()
@@ -124,6 +125,8 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				log.Println(err)
+				iter.Stop()
+				return
 			}
 
 			if !doc.Exists() {
@@ -133,7 +136,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 						Code:    3,
 						Message: "WorkOrderId not found",
 						Type:    "NOT_EXIST",
-						Fied:    "workOrderId",
+						Field:   "workOrderId",
 					},
 				}
 				return
@@ -141,6 +144,8 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 
 			var workOrder = WorkOrder{}
 			doc.DataTo(&workOrder)
+
+			log.Println("Point", workOrder.Points[0])
 
 			currentWorkOrder = workOrder
 
@@ -160,6 +165,21 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			log.Println("companyID", workOrder.CompanyID)
+
+			if len(workOrder.CompanyID) < 1 {
+				iter.Stop()
+				c <- ResultRunQueue{
+					Error: &ErrorResponse{
+						Code:    500,
+						Message: "companyID empty",
+						Type:    "INTERNAL",
+						Field:   "companyID",
+					},
+				}
+				return
+			}
+
 			if len(company.ID) < 1 {
 				docCompany, err := clientFirestore.Collection("companies").Doc(workOrder.CompanyID).Get(ctx)
 				if err != nil {
@@ -173,8 +193,8 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			if len(couriers) < 1 {
 				requestBody, err := json.Marshal(map[string]interface{}{
 					"location": map[string]interface{}{
-						"latitude":  workOrder.Points[0].Address.Latitude,
-						"longitude": workOrder.Points[0].Address.Longitude,
+						"latitude":  workOrder.Points[0].Address.Location.Geopoint.Latitude,
+						"longitude": workOrder.Points[0].Address.Location.Geopoint.Longitude,
 					},
 				})
 				if err != nil {
@@ -195,13 +215,15 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 				body := resp.Body
 				json.NewDecoder(body).Decode(&couriers)
 
+				log.Println("couriers:", len(couriers))
+
 				if len(couriers) < 1 {
 					c <- ResultRunQueue{
 						Error: &ErrorResponse{
 							Code:    3,
 							Message: "Not found couriers",
 							Type:    "NOT_EXIST",
-							Fied:    "couriers",
+							Field:   "couriers",
 						},
 					}
 					return
@@ -246,7 +268,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					c <- ResultRunQueue{
 						Error: &ErrorResponse{
-							Fied:    "workOrder.status",
+							Field:   "workOrder.status",
 							Message: "Internal server error",
 							Type:    "INTERNAL_ERROR",
 						},
@@ -396,7 +418,7 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`
 	Type    string `json:"type"`
-	Fied    string `json:"fied"`
+	Field   string `json:"field"`
 }
 
 type ResultRunQueue struct {
@@ -405,7 +427,7 @@ type ResultRunQueue struct {
 }
 type WorkOrder struct {
 	UserID    string    `json:"userId"`
-	CompanyID string    `json:"gGdovReizYh9fZSVUDUY"`
+	CompanyID string    `json:"companyId"`
 	Couriers  []Courier `json:"couriers"`
 	CourierID string    `json:"courierId"`
 	Quotation struct {
@@ -415,14 +437,16 @@ type WorkOrder struct {
 	Status string `json:"status"`
 	Points []struct {
 		Address struct {
-			Address1     string  `json:"address1"`
-			Address2     string  `json:"address2"`
-			Number       string  `json:"number"`
-			Neighborhood string  `json:"neighborhood"`
-			City         string  `json:"city"`
-			State        string  `json:"state"`
-			Latitude     float64 `json:"latitude"`
-			Longitude    float64 `json:"longitude"`
+			Address1     string `json:"address1"`
+			Address2     string `json:"address2"`
+			Number       string `json:"number"`
+			Neighborhood string `json:"neighborhood"`
+			City         string `json:"city"`
+			State        string `json:"state"`
+			Location     struct {
+				Geohash  string         `json:"geohash"`
+				Geopoint *latlng.LatLng `json:"geopoint"`
+			} `json:"location"`
 		} `json:"address"`
 		Sequence int    `json:"sequence"`
 		Status   string `json:"status"`
