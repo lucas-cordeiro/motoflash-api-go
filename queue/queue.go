@@ -194,6 +194,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 
 			if len(couriers) < 1 {
 				requestBody, err := json.Marshal(map[string]interface{}{
+					"motorcycle": workOrder.Motorcycle,
 					"location": map[string]interface{}{
 						"latitude":  workOrder.Points[0].Address.Location.Geopoint.Latitude,
 						"longitude": workOrder.Points[0].Address.Location.Geopoint.Longitude,
@@ -429,11 +430,12 @@ type ResultRunQueue struct {
 	WorkOrder *WorkOrder     `json:"workOrder"`
 }
 type WorkOrder struct {
-	UserID    string    `json:"userId"`
-	CompanyID string    `json:"companyId"`
-	Couriers  []Courier `json:"couriers"`
-	CourierID string    `json:"courierId"`
-	Quotation struct {
+	UserID     string    `json:"userId"`
+	CompanyID  string    `json:"companyId"`
+	Motorcycle bool      `json:"motorcycle"`
+	Couriers   []Courier `json:"couriers"`
+	CourierID  string    `json:"courierId"`
+	Quotation  struct {
 		Price float64 `json:"price"`
 		ID    string  `json:"id"`
 	} `json:"quotation"`
