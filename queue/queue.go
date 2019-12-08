@@ -32,14 +32,14 @@ var currentWorkOrder = WorkOrder{}
 func init() {
 	// Use the application default credentials
 	ctx := context.Background()
-	conf := &firebase.Config{DatabaseURL: "https://motoflash-a2f12.firebaseio.com/"}
+	//conf := &firebase.Config{DatabaseURL: "https://motoflash-a2f12.firebaseio.com/"}
 	// Fetch the service account key JSON file contents
-	opt := option.WithCredentialsFile("./motoflash-a2f12-500d186cdeb4.json")
+	//opt := option.WithCredentialsFile("./motoflash-a2f12-500d186cdeb4.json")
 
 	// Initialize the app with a service account, granting admin privileges
-	app, err := firebase.NewApp(ctx, conf, opt)
-	// conf := &firebase.Config{ProjectID: "motoflash-a2f12"}
-	// app, err := firebase.NewApp(ctx, conf)
+	//app, err := firebase.NewApp(ctx, conf, opt)
+	conf := &firebase.Config{ProjectID: "motoflash-a2f12"}
+	app, err := firebase.NewApp(ctx, conf)
 	if err != nil {
 		log.Fatalf("error getting NewApp client: %v\n", err)
 	}
