@@ -1,4 +1,4 @@
-package queue
+package main
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -145,7 +146,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			var workOrder = WorkOrder{}
 			doc.DataTo(&workOrder)
 
-			log.Println("Point", workOrder.Points[0])
+			log.Println("Point", workOrder.Points[0], workOder.Status)
 
 			currentWorkOrder = workOrder
 
@@ -261,7 +262,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 					})
 				}
 
-				_, err = clientFirestore.Collection("workOrders").Doc(workOrderID).Set(ctx, map[string]interface{}{
+				_, err = clientFirestore.Collection("workorders").Doc(workOrderID).Set(ctx, map[string]interface{}{
 					"status":   "CANCELLED",
 					"couriers": mapCouriers,
 				}, firestore.MergeAll)
@@ -291,7 +292,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 
 					if notify {
 						time.Sleep(time.Duration(timeSleep) * time.Millisecond)
-						notifyCourier(courierToNotify, workOrderID, workOrder.Couriers)
+						notifyCourier(courierToNotify, workOrderID, workOrder.Couriers, company.AcceptTime)
 					} else {
 						log.Println("not notify", courierToNotify.ID)
 					}
@@ -321,7 +322,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func notifyCourier(courier Courier, workOrderID string, couriers []Courier) {
+func notifyCourier(courier Courier, workOrderID string, couriers []Courier, acceptTime int64) {
 	if currentWorkOrder.Status != "PENDING" {
 		log.Println("ignored push", courier.ID)
 		return
@@ -359,6 +360,8 @@ func notifyCourier(courier Courier, workOrderID string, couriers []Courier) {
 			"title":       "Test",
 			"message":     "Message",
 			"workOrderId": workOrderID,
+			"acceptTime":  strconv.Itoa(int(acceptTime)),
+			"distance":    strconv.FormatFloat(courier.HitMetadata.Distance, 'f', 6, 64),
 		},
 		Tokens: devicesTokens,
 	}
@@ -395,7 +398,7 @@ func notifyCourier(courier Courier, workOrderID string, couriers []Courier) {
 	}
 
 	log.Println("updateCouriers", courier.ID)
-	clientFirestore.Collection("workOrders").Doc(workOrderID).Set(ctx, map[string]interface{}{
+	clientFirestore.Collection("workorders").Doc(workOrderID).Set(ctx, map[string]interface{}{
 		"couriers": mapCouriers,
 	}, firestore.MergeAll)
 	log.Println("finish send push", courier.ID)
