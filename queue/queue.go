@@ -16,7 +16,7 @@ import (
 	"firebase.google.com/go/auth"
 	"firebase.google.com/go/messaging"
 	"google.golang.org/api/iterator"
-	//"google.golang.org/api/option"
+	"google.golang.org/api/option"
 	"google.golang.org/genproto/googleapis/type/latlng"
 )
 
@@ -32,14 +32,14 @@ var currentWorkOrder = WorkOrder{}
 func init() {
 	// Use the application default credentials
 	ctx := context.Background()
-	//conf := &firebase.Config{DatabaseURL: "https://motoflash-a2f12.firebaseio.com/"}
+	conf := &firebase.Config{DatabaseURL: "https://motoflash-a2f12.firebaseio.com/"}
 	// Fetch the service account key JSON file contents
-	//opt := option.WithCredentialsFile("./motoflash-a2f12-500d186cdeb4.json")
+	opt := option.WithCredentialsFile("./motoflash-a2f12-500d186cdeb4.json")
 
 	// Initialize the app with a service account, granting admin privileges
-	//app, err := firebase.NewApp(ctx, conf, opt)
-	conf := &firebase.Config{ProjectID: "motoflash-a2f12"}
-	app, err := firebase.NewApp(ctx, conf)
+	app, err := firebase.NewApp(ctx, conf, opt)
+	// conf := &firebase.Config{ProjectID: "motoflash-a2f12"}
+	// app, err := firebase.NewApp(ctx, conf)
 	if err != nil {
 		log.Fatalf("error getting NewApp client: %v\n", err)
 	}
@@ -94,6 +94,8 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 				Field:   "accesstoken",
 				Type:    "UNAUTHORIZED",
 			})
+			return
+
 		}
 	} else {
 		_, err := clientAuth.VerifyIDToken(ctx, tokenID)
@@ -193,6 +195,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 
 			if len(couriers) < 1 {
 				requestBody, err := json.Marshal(map[string]interface{}{
+					"motorcycle": workOrder.Motorcycle,
 					"location": map[string]interface{}{
 						"latitude":  workOrder.Points[0].Address.Location.Geopoint.Latitude,
 						"longitude": workOrder.Points[0].Address.Location.Geopoint.Longitude,
@@ -274,6 +277,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 							Type:    "INTERNAL_ERROR",
 						},
 					}
+					return
 				}
 				log.Println("last courier finish time")
 
@@ -429,11 +433,12 @@ type ResultRunQueue struct {
 	WorkOrder *WorkOrder     `json:"workOrder"`
 }
 type WorkOrder struct {
-	UserID    string    `json:"userId"`
-	CompanyID string    `json:"companyId"`
-	Couriers  []Courier `json:"couriers"`
-	CourierID string    `json:"courierId"`
-	Quotation struct {
+	UserID     string    `json:"userId"`
+	CompanyID  string    `json:"companyId"`
+	Motorcycle bool      `json:"motorcycle"`
+	Couriers   []Courier `json:"couriers"`
+	CourierID  string    `json:"courierId"`
+	Quotation  struct {
 		Price float64 `json:"price"`
 		ID    string  `json:"id"`
 	} `json:"quotation"`
