@@ -1,4 +1,4 @@
-package main
+package queue
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ import (
 	"firebase.google.com/go/auth"
 	"firebase.google.com/go/messaging"
 	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
+	//"google.golang.org/api/option"
 	"google.golang.org/genproto/googleapis/type/latlng"
 )
 
@@ -148,7 +148,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			var workOrder = WorkOrder{}
 			doc.DataTo(&workOrder)
 
-			log.Println("Point", workOrder.Points[0], workOder.Status)
+			log.Println("Point", workOrder.Points[0], workOrder.Status)
 
 			currentWorkOrder = workOrder
 
@@ -194,6 +194,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if len(couriers) < 1 {
+				log.Println("motorcycle",workOrder.Motorcycle)
 				requestBody, err := json.Marshal(map[string]interface{}{
 					"motorcycle": workOrder.Motorcycle,
 					"location": map[string]interface{}{
@@ -204,6 +205,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Println(err)
 				}
+				log.Println("requestBody",requestBody)
 				requestCouriers, err := http.NewRequest("POST", "https://dev-api-moto-flash.firebaseapp.com/couriers/nearby", bytes.NewBuffer(requestBody))
 				requestCouriers.Header.Set("Content-type", "application/json")
 				requestCouriers.Header.Set("key", "&,+jQcPf4S#aoAyjC93Z990h6RKqRY")
