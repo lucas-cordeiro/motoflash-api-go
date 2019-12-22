@@ -194,9 +194,15 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if len(couriers) < 1 {
-				log.Println("motorcycle",workOrder.Motorcycle)
+				motoboy := workOrder.Motorcycle
+
+				if workOrder.Motoboy == true {
+					motoboy = workOrder.Motoboy
+				}
+
+				log.Println("motorcycle", workOrder.Motorcycle)
 				requestBody, err := json.Marshal(map[string]interface{}{
-					"motorcycle": workOrder.Motorcycle,
+					"motorcycle": motoboy,
 					"location": map[string]interface{}{
 						"latitude":  workOrder.Points[0].Address.Location.Geopoint.Latitude,
 						"longitude": workOrder.Points[0].Address.Location.Geopoint.Longitude,
@@ -205,7 +211,7 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Println(err)
 				}
-				log.Println("requestBody",requestBody)
+				log.Println("requestBody", requestBody)
 				requestCouriers, err := http.NewRequest("POST", "https://dev-api-moto-flash.firebaseapp.com/couriers/nearby", bytes.NewBuffer(requestBody))
 				requestCouriers.Header.Set("Content-type", "application/json")
 				requestCouriers.Header.Set("key", "&,+jQcPf4S#aoAyjC93Z990h6RKqRY")
@@ -438,6 +444,7 @@ type WorkOrder struct {
 	UserID     string    `json:"userId"`
 	CompanyID  string    `json:"companyId"`
 	Motorcycle bool      `json:"motorcycle"`
+	Motoboy    bool      `json:"motoboy"`
 	Couriers   []Courier `json:"couriers"`
 	CourierID  string    `json:"courierId"`
 	Quotation  struct {
