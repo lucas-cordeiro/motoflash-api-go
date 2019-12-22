@@ -254,40 +254,56 @@ func RunQueue(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if len(workOrder.Couriers) >= company.CourierCountPush || len(workOrder.Couriers) >= len(couriers) {
-				log.Println("last courier", timeSleep)
-				time.Sleep(time.Duration(timeSleep) * time.Millisecond)
+				go func() {
+					log.Println("last courier", timeSleep, currentWorkOrder)
+					time.Sleep(time.Duration(timeSleep) * time.Millisecond)
+					log.Println("last courier after sleep", currentWorkOrder)
 
-				mapCouriers := []map[string]interface{}{}
+					if len(currentWorkOrder.CourierID) > 0 {
+						responseBody, err := json.Marshal(currentWorkOrder)
+						if err != nil {
+							w.WriteHeader(http.StatusInternalServerError)
+							fmt.Fprintf(w, "Error: %s", err)
+							return
+						}
 
-				for _, value := range workOrder.Couriers {
-					status := value.Status
-
-					log.Println("value in couriers", value, currentWorkOrder.Couriers[len(workOrder.Couriers)-1].ID)
-					if value.Status == "PENDING" && value.ID == currentWorkOrder.Couriers[len(workOrder.Couriers)-1].ID {
-						status = "IGNORED"
+						w.WriteHeader(http.StatusOK)
+						w.Write(responseBody)
+						return
 					}
-					mapCouriers = append(mapCouriers, map[string]interface{}{
-						"id":           value.ID,
-						"sendPushDate": value.SendPushDate,
-						"status":       status,
-					})
-				}
 
-				_, err = clientFirestore.Collection("workorders").Doc(workOrderID).Set(ctx, map[string]interface{}{
-					"status":   "CANCELLED",
-					"couriers": mapCouriers,
-				}, firestore.MergeAll)
-				if err != nil {
-					c <- ResultRunQueue{
-						Error: &ErrorResponse{
-							Field:   "workOrder.status",
-							Message: "Internal server error",
-							Type:    "INTERNAL_ERROR",
-						},
+					mapCouriers := []map[string]interface{}{}
+
+					for _, value := range workOrder.Couriers {
+						status := value.Status
+
+						log.Println("value in couriers", value, currentWorkOrder.Couriers[len(workOrder.Couriers)-1].ID)
+						if value.Status == "PENDING" && value.ID == currentWorkOrder.Couriers[len(workOrder.Couriers)-1].ID {
+							status = "IGNORED"
+						}
+						mapCouriers = append(mapCouriers, map[string]interface{}{
+							"id":           value.ID,
+							"sendPushDate": value.SendPushDate,
+							"status":       status,
+						})
 					}
-					return
-				}
-				log.Println("last courier finish time")
+
+					_, err = clientFirestore.Collection("workorders").Doc(workOrderID).Set(ctx, map[string]interface{}{
+						"status":   "CANCELLED",
+						"couriers": mapCouriers,
+					}, firestore.MergeAll)
+					if err != nil {
+						c <- ResultRunQueue{
+							Error: &ErrorResponse{
+								Field:   "workOrder.status",
+								Message: "Internal server error",
+								Type:    "INTERNAL_ERROR",
+							},
+						}
+						return
+					}
+					log.Println("last courier finish time")
+				}()
 
 			} else {
 				go func() {
